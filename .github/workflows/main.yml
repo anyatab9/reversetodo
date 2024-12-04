@@ -5,15 +5,13 @@ on:
     workflows: ["CI - Feature to Dev"]
     types:
       - completed
- 
-# changess
+
 jobs:
   build-test-deploy:
     name: Build, Test, and Deploy
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -38,9 +36,6 @@ jobs:
         working-directory: ./frontend
         run: npm test
 
-
-
-
       - name: Install e2e dependencies
         working-directory: ./e2e-tests
         run: npm install
@@ -48,7 +43,7 @@ jobs:
       - name: Start Application with Docker Compose
         working-directory: ./
         run: |
-          docker compose up -d
+          docker-compose up -d
           echo "Waiting for application to start..."
           sleep 30
 
@@ -61,22 +56,23 @@ jobs:
         env:
           NODE_ENV: test
         run: |
-          # Installer ChromeDriver et lancer les tests Selenium
           sudo apt-get update
           sudo apt-get install -y wget unzip
           wget -q https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
           unzip chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/
           export PATH=$PATH:/usr/local/bin/
-          npm run test # Lancer les tests E2E avec Selenium
+          npm run test # Run E2E tests with Selenium
+
+      - name: Build Docker image
+        run: |
+          docker-compose build  # This will build the Docker images as per docker-compose.yml
+
       - name: Push Docker images
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            docker tag reversetodo $DOCKER_USERNAME/reversetodo:latest
-            docker push $DOCKER_USERNAME/reversetodo:latest
-            
-
-# small changes
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker tag reversetodo $DOCKER_USERNAME/reversetodo:latest
+          docker push $DOCKER_USERNAME/reversetodo:latest
