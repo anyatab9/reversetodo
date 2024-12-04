@@ -1,0 +1,43 @@
+name: CI for Dev Branch
+ 
+on:
+  push:
+    branches:
+      - dev
+ 
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+ 
+      # 2. Set up Node.js for frontend and backend
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+ 
+      # 3. Install dependencies and run tests for backend
+      - name: Install and Test Backend
+        working-directory: backend
+        run: |
+          npm install
+          npm test
+ 
+      # 4. Install dependencies and run tests for frontend
+      - name: Install and Test Frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm test
+ 
+      # 5. Merge dev to main if tests pass
+      - name: Merge dev into main
+        uses: pascalgn/automerge-action@v0.15.4
+        with:
+          target_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
