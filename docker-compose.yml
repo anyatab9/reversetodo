@@ -1,28 +1,17 @@
 version: '3'
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    volumes:
-      - mongo-data:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      - app-network
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/reverse-todo-backend:latest
     container_name: backend
     restart: always
     ports:
       - "3001:3001"
-    depends_on:
-      - mongodb
     environment:
-      - MONGO_URL=mongodb://mongodb:27017/reverse_todo
+      - MONGO_URL=mongodb+srv://anyatab:x11t57k2j5PVGr3G@cluster0.st098.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
     networks:
       - app-network
 
@@ -32,6 +21,7 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_API_URL: http://localhost:3001
+    image: ${DOCKER_USERNAME}/reverse-todo-frontend:latest
     container_name: frontend
     restart: always
     ports:
@@ -40,9 +30,6 @@ services:
       - backend
     networks:
       - app-network
-
-volumes:
-  mongo-data:
 
 networks:
   app-network:
